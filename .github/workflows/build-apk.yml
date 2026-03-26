@@ -21,11 +21,16 @@ jobs:
         run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > ${{ github.workspace }}/keystore.jks
 
+      - name: Fix Gradle JVM options
+        run: |
+          find . -name "gradle.properties" | xargs grep -l "MaxPermSize" | xargs sed -i 's/-XX:MaxPermSize=[^ ]*//g' || true
+
       - name: Build signed APK
         env:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          GRADLE_OPTS: "-XX:MaxMetaspaceSize=1g -Xmx4g"
         run: ./gradlew assembleFdroidRelease
 
       - name: Upload APK
