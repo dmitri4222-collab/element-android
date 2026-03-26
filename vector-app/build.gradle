@@ -143,7 +143,7 @@ android {
     compileSdk versions.compileSdk
 
     defaultConfig {
-        applicationId "im.vector.app"
+        applicationId "org.digital.matrix"
         // Set to API 21: see #405
         minSdk versions.minSdk
         targetSdk versions.targetSdk
@@ -215,7 +215,7 @@ android {
 
     testOptions {
         // Disables animations during instrumented tests you run from the command line…
-        // This property does not affect tests that you run using Android Studio.”
+        // This property does not affect tests that you run using Android Studio."
         animationsDisabled = true
 
         // Comment to run on Android 12
@@ -236,10 +236,10 @@ android {
             storePassword System.env.ELEMENT_ANDROID_NIGHTLY_STOREPASSWORD ?: project.property("signing.element.nightly.storePassword")
         }
         release {
-            keyAlias project.property("signing.element.keyId")
-            keyPassword project.property("signing.element.keyPassword")
-            storeFile file(project.property("signing.element.storePath"))
-            storePassword project.property("signing.element.storePassword")
+            keyAlias System.env.KEY_ALIAS
+            keyPassword System.env.KEY_PASSWORD
+            storeFile file("${rootDir}/keystore.jks")
+            storePassword System.env.KEYSTORE_PASSWORD
         }
     }
 
@@ -265,7 +265,7 @@ android {
                 optimizeCode true
                 proguardFiles 'proguard-rules.pro'
             }
-            // signingConfig signingConfigs.release
+              signingConfig signingConfigs.release
         }
 
         nightly {
