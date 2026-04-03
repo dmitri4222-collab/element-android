@@ -16,6 +16,7 @@ import im.vector.app.features.mdm.MdmData
 import im.vector.app.features.mdm.MdmService
 import org.matrix.android.sdk.api.session.pushers.HttpPusher
 import org.matrix.android.sdk.api.session.pushers.Pusher
+import java.net.URL
 import java.util.UUID
 import javax.inject.Inject
 import kotlin.math.abs
@@ -47,6 +48,17 @@ class PushersManager @Inject constructor(
                 pushKey = pushKey,
                 gateway = mdmService.getData(MdmData.DefaultPushGatewayUrl, stringProvider.getString(im.vector.app.config.R.string.pusher_http_url))
         )
+    }
+
+    /**
+     * Регистрирует pusher для встроенного push relay.
+     * Gateway URL строится динамически из homeserver URL пользователя:
+     * https://matrix.company.org → https://matrix.company.org/push
+     */
+    suspend fun enqueueRegisterPusherWithRelayKey(pushKey: String, homeServerUrl: String): UUID {
+        val parsed = URL(homeServerUrl)
+        val gateway = "${parsed.protocol}://${parsed.host}/push"
+        return enqueueRegisterPusher(pushKey = pushKey, gateway = gateway)
     }
 
     suspend fun enqueueRegisterPusher(
