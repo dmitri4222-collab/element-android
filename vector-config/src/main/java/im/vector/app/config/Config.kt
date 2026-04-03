@@ -28,7 +28,7 @@ object Config {
      * - Changing the value from `false` to `true` will let the user be able to select an external UnifiedPush distributor;
      * - Changing the value from `true` to `false` will force the app to return to the background sync / Firebase Push.
      */
-    const val ALLOW_EXTERNAL_UNIFIED_PUSH_DISTRIBUTORS = true
+    const val ALLOW_EXTERNAL_UNIFIED_PUSH_DISTRIBUTORS = false
 
     const val ENABLE_LOCATION_SHARING = true
     const val LOCATION_MAP_TILER_KEY = "fU3vlMsMn4Jb6dnEIFsx"
@@ -67,25 +67,13 @@ object Config {
      * The analytics configuration to use for the Debug build type.
      * Can be disabled by providing Analytics.Disabled
      */
-    val DEBUG_ANALYTICS_CONFIG = Analytics.Enabled(
-            postHogHost = "https://posthog.element.dev",
-            postHogApiKey = "phc_VtA1L35nw3aeAtHIx1ayrGdzGkss7k1xINeXcoIQzXN",
-            policyLink = "https://element.io/cookie-policy",
-            sentryDSN = "https://f6acc9cfc2024641b28c87ad95e73e66@sentry.tools.element.io/49",
-            sentryEnvironment = "DEBUG"
-    )
+    val DEBUG_ANALYTICS_CONFIG = Analytics.Disabled
 
     /**
      * The analytics configuration to use for the Release build type.
      * Can be disabled by providing Analytics.Disabled
      */
-    val RELEASE_ANALYTICS_CONFIG = Analytics.Enabled(
-            postHogHost = "https://posthog.element.io",
-            postHogApiKey = "phc_Jzsm6DTm6V2705zeU5dcNvQDlonOR68XvX2sh1sEOHO",
-            policyLink = "https://element.io/cookie-policy",
-            sentryDSN = "https://f6acc9cfc2024641b28c87ad95e73e66@sentry.tools.element.io/49",
-            sentryEnvironment = "RELEASE"
-    )
+    val RELEASE_ANALYTICS_CONFIG = Analytics.Disabled
 
     /**
      * The analytics configuration to use for the Nightly build type.
@@ -103,9 +91,5 @@ object Config {
      * Fork maintainers can use this to inform users about their new application if any. Note that you probably also want
      * to replace the resource `replacement_app_icon` too.
      */
-    val sunsetConfig: SunsetConfig = SunsetConfig.Enabled(
-            learnMoreLink = "https://element.io/app-for-productivity",
-            replacementApplicationName = "Element X",
-            replacementApplicationId = "io.element.android.x",
-    )
+    val sunsetConfig: SunsetConfig = SunsetConfig.Disabled
 }
