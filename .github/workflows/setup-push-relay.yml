@@ -1,0 +1,30 @@
+name: Setup Push Relay Branch
+
+on:
+  workflow_dispatch:
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Run push relay setup script
+        run: bash setup_push_relay.sh
+
+      - name: Show result
+        run: |
+          echo "=== Созданные коммиты ==="
+          git log --oneline origin/develop..HEAD
