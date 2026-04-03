@@ -67,6 +67,7 @@ import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.UUID
 import java.util.concurrent.Executors
 import javax.inject.Inject
 import androidx.work.Configuration as WorkConfiguration
@@ -222,7 +223,16 @@ class VectorApplication :
         // Initialize Mapbox before inflating mapViews
         MapLibre.getInstance(this)
 
-        initMemoryLeakAnalysis()
+
+        // Генерация device token для push relay при первом запуске
+        val pushPrefs = getSharedPreferences("push_prefs", Context.MODE_PRIVATE)
+        if (pushPrefs.getString("device_token", null) == null) {
+            pushPrefs.edit()
+                    .putString("device_token", UUID.randomUUID().toString())
+                    .apply()
+        }
+
+                initMemoryLeakAnalysis()
     }
 
     private fun configureEpoxy() {

@@ -11,6 +11,8 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.PowerManager
+import android.provider.Settings
 import android.os.Bundle
 import android.os.Parcelable
 import android.view.Menu
@@ -28,6 +30,7 @@ import com.airbnb.mvrx.viewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import im.vector.app.R
+import im.vector.app.core.pushers.PushRelayService
 import im.vector.app.SpaceStateHandler
 import im.vector.app.core.extensions.hideKeyboard
 import im.vector.app.core.extensions.registerStartForActivityResult
@@ -719,7 +722,21 @@ class HomeActivity :
         // nop
     }
 
-    companion object {
+
+    private fun requestBatteryOptimizationExclusion() {
+        val pm = getSystemService(PowerManager::class.java)
+        if (!pm.isIgnoringBatteryOptimizations(packageName)) {
+            runCatching {
+                startActivity(
+                        Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                            data = Uri.parse("package:$packageName")
+                        }
+                )
+            }
+        }
+    }
+
+        companion object {
         fun newIntent(
                 context: Context,
                 firstStartMainActivity: Boolean,
