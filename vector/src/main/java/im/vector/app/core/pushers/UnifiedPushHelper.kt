@@ -89,16 +89,30 @@ class UnifiedPushHelper @Inject constructor(
             endpoint: String,
             onDoneRunnable: Runnable? = null
     ) {
-        // if we use the embedded distributor,
-        // register app_id type upfcm on sygnal
-        // the pushkey if FCM key
+        // Встроенный дистрибьютор — используем push relay на том же сервере что и homeserver
         if (UnifiedPush.getDistributor(context) == context.packageName) {
-            unifiedPushStore.storePushGateway(
-                    gateway = mdmService.getData(
-                            mdmData = MdmData.DefaultPushGatewayUrl,
-                            defaultValue = stringProvider.getString(im.vector.app.config.R.string.pusher_http_url),
-                    )
-            )
+            val homeServerUrl = try {
+                matrix.authenticationService()
+                        .getLastAuthenticatedSession()
+                        ?.sessionParams
+                        ?.homeServerUrl
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to get homeserver URL for push gateway")
+                null
+            }
+
+            val gateway = if (homeServerUrl != null) {
+                val parsed = java.net.URL(homeServerUrl)
+                "${parsed.protocol}://${parsed.host}/push"
+            } else {
+                // fallback на значение из MDM/strings
+                mdmService.getData(
+                        mdmData = MdmData.DefaultPushGatewayUrl,
+                        defaultValue = stringProvider.getString(im.vector.app.config.R.string.pusher_http_url),
+                )
+            }
+
+            unifiedPushStore.storePushGateway(gateway)
             onDoneRunnable?.run()
             return
         }
