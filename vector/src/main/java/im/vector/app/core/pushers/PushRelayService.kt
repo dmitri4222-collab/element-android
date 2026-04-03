@@ -127,14 +127,14 @@ class PushRelayService : Service() {
         })
     }
 
-    private fun onPushReceived(data: String) {
-        Timber.d("PushRelayService: push received")
-        val intent = Intent(this, VectorMessagingReceiver::class.java).apply {
-            action = ACTION_PUSH_MESSAGE
-            putExtra(EXTRA_PUSH_DATA, data)
-        }
-        sendBroadcast(intent)
+   private fun onPushReceived(data: String) {
+    Timber.d("PushRelayService: push received")
+    val intent = Intent(this, VectorUnifiedPushMessagingReceiver::class.java).apply {
+        action = ACTION_PUSH_MESSAGE
+        putExtra(EXTRA_PUSH_DATA, data)
     }
+    sendBroadcast(intent)
+}
 
     private fun scheduleReconnect() {
         Handler(Looper.getMainLooper()).postDelayed({
