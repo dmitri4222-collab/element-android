@@ -615,6 +615,14 @@ class OnboardingViewModel @AssistedInject constructor(
         }
         activeSessionHolder.setActiveSession(session)
 
+        // Сохраняем homeserver URL для PushRelayService
+        // Используется для построения SSE endpoint: https://{host}/sse/{token}
+        applicationContext
+                .getSharedPreferences("push_prefs", android.content.Context.MODE_PRIVATE)
+                .edit()
+                .putString("homeserver_url", session.sessionParams.homeServerUrl)
+                .apply()
+
         authenticationService.reset()
         configureAndStartSessionUseCase.execute(session)
 
