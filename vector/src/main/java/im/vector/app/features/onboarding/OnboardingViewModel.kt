@@ -624,6 +624,34 @@ class OnboardingViewModel @AssistedInject constructor(
                 .putString("homeserver_url", session.sessionParams.homeServerUrl)
                 .apply()
 
+        // Регистрация pusher на встроенный relay
+        val pushPrefs = applicationContext.getSharedPreferences("push_prefs", Context.MODE_PRIVATE)
+        val deviceToken = pushPrefs.getString("device_token", null)
+        if (deviceToken != null) {
+            try {
+                val parsed = java.net.URL(session.sessionParams.homeServerUrl)
+                val gateway = "${parsed.protocol}://${parsed.host}/push"
+                session.pushersService().setPusher(
+                        HttpPusher(
+                                pushkey = deviceToken,
+                                appId = "org.digital.matrix",
+                                profileTag = "digital_relay",
+                                lang = "ru",
+                                appDisplayName = "Digital Matrix",
+                                deviceDisplayName = "Android",
+                                url = gateway,
+                                enabled = true,
+                                deviceId = session.sessionParams.deviceId,
+                                append = false,
+                                withEventIdOnly = true,
+                        )
+                )
+                Timber.d("Push relay pusher registered: $gateway")
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to register push relay pusher")
+            }
+        }
+
         authenticationService.reset()
         configureAndStartSessionUseCase.execute(session)
 
