@@ -631,7 +631,7 @@ class OnboardingViewModel @AssistedInject constructor(
             try {
                 val parsed = java.net.URL(session.sessionParams.homeServerUrl)
                 val gateway = "${parsed.protocol}://${parsed.host}/push"
-                session.pushersService().setPusher(
+                session.pushersService().enqueueAddHttpPusher(
                         HttpPusher(
                                 pushkey = deviceToken,
                                 appId = "org.digital.matrix",
