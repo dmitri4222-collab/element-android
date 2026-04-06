@@ -63,6 +63,7 @@ import org.matrix.android.sdk.api.network.ssl.Fingerprint
 import org.matrix.android.sdk.api.session.Session
 import org.matrix.android.sdk.api.util.BuildVersionSdkIntProvider
 import timber.log.Timber
+import org.matrix.android.sdk.api.session.pushers.HttpPusher
 import java.util.UUID
 import java.util.concurrent.CancellationException
 
