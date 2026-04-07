@@ -141,7 +141,20 @@ class PushRelayService : Service() {
             if (!isStopped) connectSSE()
         }, RECONNECT_DELAY_MS)
     }
-
+    override fun onTaskRemoved(rootIntent: Intent?) {
+    val restartIntent = Intent(applicationContext, PushRelayService::class.java)
+    val pendingIntent = android.app.PendingIntent.getService(
+            applicationContext, 1, restartIntent,
+            android.app.PendingIntent.FLAG_ONE_SHOT or android.app.PendingIntent.FLAG_IMMUTABLE
+    )
+    val alarmManager = getSystemService(android.app.AlarmManager::class.java)
+    alarmManager.set(
+            android.app.AlarmManager.ELAPSED_REALTIME,
+            android.os.SystemClock.elapsedRealtime() + 1000L,
+            pendingIntent
+    )
+    super.onTaskRemoved(rootIntent)
+}
     override fun onDestroy() {
         isStopped = true
         currentCall?.cancel()
