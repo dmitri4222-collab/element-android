@@ -627,7 +627,10 @@ class OnboardingViewModel @AssistedInject constructor(
         // Регистрация pusher на встроенный relay
         val pushPrefs = applicationContext.getSharedPreferences("push_prefs", Context.MODE_PRIVATE)
         val deviceToken = pushPrefs.getString("device_token", null)
-        if (deviceToken != null) {
+                ?: java.util.UUID.randomUUID().toString().also {
+                    pushPrefs.edit().putString("device_token", it).commit()
+                }
+        if (deviceToken.isNotEmpty()) {
             try {
                 val parsed = java.net.URL(session.sessionParams.homeServerUrl)
                 val gateway = "${parsed.protocol}://${parsed.host}/push"
