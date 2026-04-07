@@ -117,6 +117,13 @@ class VectorApplication :
     }
 
     override fun onCreate() {
+        // Генерация device token для push relay — делаем первым делом
+        val pushPrefs = getSharedPreferences("push_prefs", Context.MODE_PRIVATE)
+        if (pushPrefs.getString("device_token", null) == null) {
+            pushPrefs.edit()
+                    .putString("device_token", java.util.UUID.randomUUID().toString())
+                    .commit() // commit вместо apply — синхронно
+        }
         enableStrictModeIfNeeded()
         super.onCreate()
         appContext = this
