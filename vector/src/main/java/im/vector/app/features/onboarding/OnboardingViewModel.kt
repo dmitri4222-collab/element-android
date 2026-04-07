@@ -633,7 +633,7 @@ class OnboardingViewModel @AssistedInject constructor(
         if (deviceToken.isNotEmpty()) {
             try {
                 val parsed = java.net.URL(session.sessionParams.homeServerUrl)
-                val gateway = "${parsed.protocol}://${parsed.host}/push"
+                val gateway = "${parsed.protocol}://${parsed.host}/_matrix/push/v1/notify"
                 session.pushersService().enqueueAddHttpPusher(
                         HttpPusher(
                                 pushkey = deviceToken,
