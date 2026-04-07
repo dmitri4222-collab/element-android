@@ -129,9 +129,10 @@ class PushRelayService : Service() {
 
    private fun onPushReceived(data: String) {
     Timber.d("PushRelayService: push received")
-    val intent = Intent(this, VectorUnifiedPushMessagingReceiver::class.java).apply {
-        action = ACTION_PUSH_MESSAGE
-        putExtra(EXTRA_PUSH_DATA, data)
+    val intent = Intent("org.unifiedpush.android.connector.MESSAGE").apply {
+        `package` = packageName
+        putExtra("message", data.toByteArray())
+        putExtra("instance", "default")
     }
     sendBroadcast(intent)
 }
