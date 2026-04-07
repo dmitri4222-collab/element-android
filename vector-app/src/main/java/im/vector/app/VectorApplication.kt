@@ -230,15 +230,6 @@ class VectorApplication :
         // Initialize Mapbox before inflating mapViews
         MapLibre.getInstance(this)
 
-
-        // Генерация device token для push relay при первом запуске
-        val pushPrefs = getSharedPreferences("push_prefs", Context.MODE_PRIVATE)
-        if (pushPrefs.getString("device_token", null) == null) {
-            pushPrefs.edit()
-                    .putString("device_token", UUID.randomUUID().toString())
-                    .apply()
-        }
-
                 initMemoryLeakAnalysis()
     }
 
