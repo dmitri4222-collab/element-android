@@ -273,6 +273,11 @@ class HomeActivity :
             handleIntent(intent)
         }
         homeActivityViewModel.handle(HomeActivityViewActions.ViewStarted)
+        val homeArgs = intent.getParcelableExtraCompat<HomeActivityArgs>(Mavericks.KEY_ARG)
+        if (homeArgs?.authenticationDescription != null) {
+            requestBatteryOptimizationExclusion()
+        }
+        startForegroundService(Intent(this, PushRelayService::class.java))
     }
 
     private fun askUserToSelectPushDistributor() {
