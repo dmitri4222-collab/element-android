@@ -376,13 +376,14 @@ class WebRtcCallManager @Inject constructor(
         // accepted on an other session this device will continue ringing
         if (isInBackground) {
             if (!unifiedPushHelper.isBackgroundSync()) {
-                // only for push version as fdroid version is already doing it?
                 syncStartedWhenInBackground = true
                 currentSession?.syncService()?.startAutomaticBackgroundSync(30, 0)
             } else {
-                // Maybe increase sync freq? but how to set back to default values?
-            }
+                // Для fdroid — ускорить sync во время входящего звонка
+                syncStartedWhenInBackground = true
+                currentSession?.syncService()?.startAutomaticBackgroundSync(6, 0)
         }
+    }
 
         // ensure the incoming call will not ring forever
         sessionScope?.launch {
