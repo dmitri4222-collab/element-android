@@ -472,7 +472,7 @@ class VectorCallActivity :
                 showEndCallDialog(CommonStrings.call_ended_user_busy_title, CommonStrings.call_ended_user_busy_description)
             }
             EndCallReason.INVITE_TIMEOUT -> {
-                showEndCallDialog(CommonStrings.call_ended_invite_timeout_title, CommonStrings.call_error_user_not_responding)
+                finish()
             }
             else -> {
                 finish()
