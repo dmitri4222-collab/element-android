@@ -386,7 +386,7 @@ class WebRtcCallManager @Inject constructor(
 
         // ensure the incoming call will not ring forever
         sessionScope?.launch {
-            delay(30 * 1000 /* 30 seconds */)
+            delay(2 * 60 * 1000 /* 2 minutes */)
             if (mxCall.state is CallState.LocalRinging) {
                 onCallEnded(mxCall.callId, EndCallReason.INVITE_TIMEOUT, rejected = false)
             }
