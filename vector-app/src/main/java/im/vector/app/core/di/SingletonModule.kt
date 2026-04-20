@@ -72,8 +72,6 @@ import org.matrix.android.sdk.api.session.Session
 import org.matrix.android.sdk.api.session.sync.filter.SyncFilterParams
 import org.matrix.android.sdk.api.settings.LightweightSettingsStorage
 import javax.inject.Singleton
-import im.vector.app.core.services.DefaultGuardServiceStarter
-import im.vector.app.core.services.GuardServiceStarter
 
 @InstallIn(SingletonComponent::class) @Module abstract class VectorBindModule {
 
@@ -118,9 +116,6 @@ import im.vector.app.core.services.GuardServiceStarter
 
     @Binds
     abstract fun bindGetDeviceInfoUseCase(getDeviceInfoUseCase: DefaultGetDeviceInfoUseCase): GetDeviceInfoUseCase
-
-    @Binds
-    abstract fun bindGuardServiceStarter(starter: DefaultGuardServiceStarter): GuardServiceStarter
 }
 
 @InstallIn(SingletonComponent::class) @Module object VectorStaticModule {
