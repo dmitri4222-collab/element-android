@@ -24,6 +24,7 @@ import im.vector.app.features.home.NightlyProxy
 import im.vector.app.features.settings.VectorPreferences
 import im.vector.app.features.settings.legals.FlavorLegals
 import im.vector.app.push.fcm.FdroidFcmHelper
+import org.matrix.android.sdk.api.Matrix
 
 @InstallIn(SingletonComponent::class)
 @Module
@@ -31,10 +32,9 @@ abstract class FlavorModule {
 
     companion object {
         @Provides
-        fun provideGuardServiceStarter(preferences: VectorPreferences, appContext: Context): GuardServiceStarter {
-            return FDroidGuardServiceStarter(preferences, appContext)
+        fun provideGuardServiceStarter(preferences: VectorPreferences, appContext: Context, matrix: Matrix): GuardServiceStarter {
+        return FDroidGuardServiceStarter(preferences, appContext, matrix)
         }
-
         @Provides
         fun provideNightlyProxy() = object : NightlyProxy {
             override fun canDisplayPopup() = false
