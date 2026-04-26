@@ -135,6 +135,11 @@ class VectorSyncAndroidService : SyncAndroidService() {
         removeForegroundNotification()
         super.onDestroy()
     }
+    @androidx.annotation.RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+    override fun onTimeout(startId: Int) {
+        Timber.w("## Sync: onTimeout called, will restart")
+        stopSelf(startId)
+    }
 
     private fun removeForegroundNotification() {
         val notificationManager = getSystemService<NotificationManager>()!!
