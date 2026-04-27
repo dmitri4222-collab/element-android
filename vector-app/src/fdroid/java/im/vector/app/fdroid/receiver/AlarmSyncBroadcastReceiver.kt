@@ -74,7 +74,7 @@ class AlarmSyncBroadcastReceiver : BroadcastReceiver() {
             val firstMillis = clock.epochMillis() + delayInSeconds * 1000L
             val alarmMgr = context.getSystemService<AlarmManager>()!!
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                alarmMgr.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, firstMillis, pIntent)
+                alarmMgr.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, firstMillis, pIntent)
             } else {
                 alarmMgr.set(AlarmManager.RTC_WAKEUP, firstMillis, pIntent)
             }
