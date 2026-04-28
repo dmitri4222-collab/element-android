@@ -387,7 +387,8 @@ class WebRtcCallManager @Inject constructor(
                 }
             }
         }
-
+    }
+    
     override fun onCallAnswerReceived(callAnswerContent: CallAnswerContent) {
         val call = callsByCallId[callAnswerContent.callId]
                 ?: return Unit.also {
