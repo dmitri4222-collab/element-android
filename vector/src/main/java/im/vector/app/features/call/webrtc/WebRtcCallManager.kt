@@ -379,8 +379,15 @@ class WebRtcCallManager @Inject constructor(
             } else {
                 syncStartedWhenInBackground = true
                 currentSession?.syncService()?.startAutomaticBackgroundSync(6, 0)
+                val inviteReceivedAt = System.currentTimeMillis()
+                val lifetime = (callInviteContent.lifetime ?: 60000).toLong()
                 sessionScope?.launch {
                     while (mxCall.state is CallState.LocalRinging) {
+                        val elapsed = System.currentTimeMillis() - inviteReceivedAt
+                        if (elapsed > lifetime - 5_000L) {
+                            Timber.tag(loggerTag.value).w("onCallInviteReceived: TTL exhausted after ${elapsed}ms, stopping sync loop")
+                            break
+                        }
                         delay(2000)
                         currentSession?.syncService()?.requireBackgroundSync()
                     }
