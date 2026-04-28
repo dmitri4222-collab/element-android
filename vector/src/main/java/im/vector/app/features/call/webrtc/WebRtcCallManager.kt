@@ -371,28 +371,22 @@ class WebRtcCallManager @Inject constructor(
                 callId = mxCall.callId,
                 isInBackground = isInBackground
         )
-        // If this is received while in background, the app will not sync,
-        // and thus won't be able to received events. For example if the call is
-        // accepted on an other session this device will continue ringing
+// accepted on an other session this device will continue ringing
         if (isInBackground) {
             if (!unifiedPushHelper.isBackgroundSync()) {
                 syncStartedWhenInBackground = true
                 currentSession?.syncService()?.startAutomaticBackgroundSync(30, 0)
             } else {
-                // Для fdroid — ускорить sync во время входящего звонка
                 syncStartedWhenInBackground = true
                 currentSession?.syncService()?.startAutomaticBackgroundSync(6, 0)
-        }
-    }
-
-        // ensure the incoming call will not ring forever
-        sessionScope?.launch {
-            delay(2 * 60 * 1000 /* 2 minutes */)
-            if (mxCall.state is CallState.LocalRinging) {
-                onCallEnded(mxCall.callId, EndCallReason.INVITE_TIMEOUT, rejected = false)
+                sessionScope?.launch {
+                    while (mxCall.state is CallState.LocalRinging) {
+                        delay(2000)
+                        currentSession?.syncService()?.requireBackgroundSync()
+                    }
+                }
             }
         }
-    }
 
     override fun onCallAnswerReceived(callAnswerContent: CallAnswerContent) {
         val call = callsByCallId[callAnswerContent.callId]
