@@ -12,6 +12,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.support.v4.media.session.MediaSessionCompat
 import androidx.core.content.getSystemService
 import androidx.work.Constraints
 import androidx.work.Data
@@ -36,6 +37,8 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class VectorSyncAndroidService : SyncAndroidService() {
+
+    private var mediaSession: MediaSessionCompat? = null
 
     companion object {
 
@@ -82,6 +85,13 @@ class VectorSyncAndroidService : SyncAndroidService() {
     override fun getDefaultSyncDelaySeconds() = BackgroundSyncMode.DEFAULT_SYNC_DELAY_SECONDS
 
     override fun getDefaultSyncTimeoutSeconds() = BackgroundSyncMode.DEFAULT_SYNC_TIMEOUT_SECONDS
+
+    override fun onCreate() {
+        super.onCreate()
+        mediaSession = MediaSessionCompat(this, "VectorSyncService").apply {
+            isActive = true
+        }
+    }
 
     override fun onStart(isInitialSync: Boolean) {
         val notificationSubtitleRes = if (isInitialSync) {
@@ -132,9 +142,12 @@ class VectorSyncAndroidService : SyncAndroidService() {
     }
 
     override fun onDestroy() {
+        mediaSession?.release()
+        mediaSession = null
         removeForegroundNotification()
         super.onDestroy()
     }
+
     @androidx.annotation.RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     override fun onTimeout(startId: Int) {
         Timber.w("## Sync: onTimeout called, will restart")
@@ -146,7 +159,6 @@ class VectorSyncAndroidService : SyncAndroidService() {
         notificationManager.cancel(NotificationUtils.NOTIFICATION_ID_FOREGROUND_SERVICE)
     }
 
-    // I do not move or rename this class, since I'm not sure about the side effect regarding the WorkManager
     class RestartWhenNetworkOn(
             appContext: Context,
             workerParams: WorkerParameters
@@ -159,7 +171,6 @@ class VectorSyncAndroidService : SyncAndroidService() {
             val syncDelaySeconds = inputData.getInt(KEY_SYNC_DELAY_SECONDS, BackgroundSyncMode.DEFAULT_SYNC_DELAY_SECONDS)
             val isPeriodic = inputData.getBoolean(KEY_IS_PERIODIC, false)
 
-            // Not sure how to inject a Clock here
             val clock = DefaultClock()
             applicationContext.rescheduleSyncService(
                     sessionId = sessionId,
@@ -169,7 +180,6 @@ class VectorSyncAndroidService : SyncAndroidService() {
                     isNetworkBack = true,
                     currentTimeMillis = clock.epochMillis()
             )
-            // Indicate whether the work finished successfully with the Result
             return Result.success()
         }
 
@@ -221,7 +231,6 @@ private fun Context.rescheduleSyncService(
     }
 
     if (isNetworkBack || syncDelaySeconds == 0) {
-        // Do not wait, do the sync now (more reactivity if network back is due to user action)
         startService(intent)
     } else {
         val pendingIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
