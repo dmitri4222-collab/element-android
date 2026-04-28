@@ -34,6 +34,7 @@ import org.matrix.android.sdk.api.Matrix
 import org.matrix.android.sdk.api.session.sync.job.SyncAndroidService
 import timber.log.Timber
 import javax.inject.Inject
+import android.support.v4.media.session.PlaybackStateCompat
 
 @AndroidEntryPoint
 class VectorSyncAndroidService : SyncAndroidService() {
@@ -89,6 +90,11 @@ class VectorSyncAndroidService : SyncAndroidService() {
     override fun onCreate() {
         super.onCreate()
         mediaSession = MediaSessionCompat(this, "VectorSyncService").apply {
+            val state = PlaybackStateCompat.Builder()
+                .setActions(PlaybackStateCompat.ACTION_PLAY or PlaybackStateCompat.ACTION_STOP)
+                .setState(PlaybackStateCompat.STATE_PLAYING, 0, 1.0f)
+                .build()
+            setPlaybackState(state)
             isActive = true
         }
     }
