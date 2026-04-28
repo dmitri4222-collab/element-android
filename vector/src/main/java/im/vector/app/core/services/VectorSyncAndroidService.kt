@@ -35,11 +35,20 @@ import org.matrix.android.sdk.api.session.sync.job.SyncAndroidService
 import timber.log.Timber
 import javax.inject.Inject
 import android.support.v4.media.session.PlaybackStateCompat
+import android.os.SystemClock
 
 @AndroidEntryPoint
 class VectorSyncAndroidService : SyncAndroidService() {
 
     private var mediaSession: MediaSessionCompat? = null
+    private var lastKnownSessionId: String? = null  // добавить
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        intent?.getStringExtra(EXTRA_SESSION_ID)?.let {
+            lastKnownSessionId = it
+        }
+        return super.onStartCommand(intent, flags, startId)
+    }
 
     companion object {
 
@@ -154,6 +163,43 @@ class VectorSyncAndroidService : SyncAndroidService() {
         super.onDestroy()
     }
 
+    override fun onTaskRemoved(rootIntent: Intent?) {
+    super.onTaskRemoved(rootIntent)
+    val sessionId = lastKnownSessionId ?: return
+    Timber.w("## Sync: onTaskRemoved — scheduling restart in 3s")
+    val restartIntent = newPeriodicIntent(
+            context = this,
+            sessionId = sessionId,
+            syncTimeoutSeconds = getDefaultSyncTimeoutSeconds(),
+            syncDelaySeconds = 0,
+            isNetworkBack = false
+    )
+    val pendingIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        PendingIntent.getForegroundService(
+                this, 2, restartIntent,
+                PendingIntentCompat.FLAG_IMMUTABLE
+        )
+    } else {
+        PendingIntent.getService(
+                this, 2, restartIntent,
+                PendingIntentCompat.FLAG_IMMUTABLE
+        )
+    }
+    val alarmMgr = getSystemService<AlarmManager>()!!
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        alarmMgr.setAndAllowWhileIdle(
+                AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                SystemClock.elapsedRealtime() + 3_000L,
+                pendingIntent
+        )
+    } else {
+        alarmMgr.set(
+                AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                SystemClock.elapsedRealtime() + 3_000L,
+                pendingIntent
+        )
+    }
+}
     @androidx.annotation.RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     override fun onTimeout(startId: Int) {
         Timber.w("## Sync: onTimeout called, will restart")
