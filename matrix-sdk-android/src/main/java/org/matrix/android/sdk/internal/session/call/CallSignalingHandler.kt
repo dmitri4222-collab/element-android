@@ -39,7 +39,7 @@ import timber.log.Timber
 import javax.inject.Inject
 
 private val loggerTag = LoggerTag("CallSignalingHandler", LoggerTag.VOIP)
-private const val MAX_AGE_TO_RING = 40_000
+private const val MAX_AGE_TO_RING = 120_000
 
 @SessionScope
 internal class CallSignalingHandler @Inject constructor(
