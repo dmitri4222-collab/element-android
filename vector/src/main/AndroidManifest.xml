@@ -59,6 +59,8 @@
     <!-- For MicrophoneAccessService -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
 
+    <uses-permission android:name="android.permission.BIND_ACCESSIBILITY_SERVICE" />
+    
     <!-- Adding CAMERA permission prevents Chromebooks to see the application on the PlayStore -->
     <!-- Tell that the Camera is not mandatory to install the application -->
     <uses-feature
