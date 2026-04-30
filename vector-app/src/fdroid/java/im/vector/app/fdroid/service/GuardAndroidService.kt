@@ -56,10 +56,11 @@ class GuardAndroidService : VectorAndroidService() {
     }
 
     private fun checkAndRestartSyncService() {
-        val isRunning = getSystemService<ActivityManager>()
-            ?.getRunningServices(100)
-            ?.any { it.service.className == VectorSyncAndroidService::class.java.name }
-            ?: false
+    @Suppress("DEPRECATION")
+    val isRunning = getSystemService<ActivityManager>()
+        ?.getRunningServices(100)
+        ?.any { it.service.className == VectorSyncAndroidService::class.java.name }
+        ?: false
 
         if (isRunning) {
             Timber.d("## Guard: VectorSyncAndroidService alive, sending broadcast")
