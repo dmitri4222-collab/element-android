@@ -11,6 +11,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.media.AudioManager
 import android.media.MediaPlayer
 import android.os.Build
 import android.os.SystemClock
@@ -126,6 +127,12 @@ class VectorSyncAndroidService : SyncAndroidService() {
                 start()
             }
         }
+        @Suppress("DEPRECATION")
+        getSystemService<AudioManager>()?.requestAudioFocus(
+            null,
+            AudioManager.STREAM_MUSIC,
+            AudioManager.AUDIOFOCUS_GAIN
+        )
     }
 
     override fun onRescheduleAsked(
