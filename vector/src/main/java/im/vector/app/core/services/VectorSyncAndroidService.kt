@@ -11,6 +11,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.media.MediaPlayer
 import android.os.Build
 import android.os.SystemClock
 import android.support.v4.media.session.MediaSessionCompat
@@ -25,6 +26,7 @@ import androidx.work.WorkRequest
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import dagger.hilt.android.AndroidEntryPoint
+import im.vector.app.R
 import im.vector.app.core.extensions.startForegroundCompat
 import im.vector.app.core.platform.PendingIntentCompat
 import im.vector.app.features.notifications.NotificationUtils
@@ -41,6 +43,7 @@ import javax.inject.Inject
 class VectorSyncAndroidService : SyncAndroidService() {
 
     private var mediaSession: MediaSessionCompat? = null
+    private var silencePlayer: MediaPlayer? = null
     private var lastKnownSessionId: String? = null
 
     companion object {
@@ -116,6 +119,13 @@ class VectorSyncAndroidService : SyncAndroidService() {
         }
         val notification = notificationUtils.buildForegroundServiceNotification(notificationSubtitleRes, false)
         startForegroundCompat(NotificationUtils.NOTIFICATION_ID_FOREGROUND_SERVICE, notification)
+        if (silencePlayer == null) {
+            silencePlayer = MediaPlayer.create(this, R.raw.silence)?.apply {
+                isLooping = true
+                setVolume(0f, 0f)
+                start()
+            }
+        }
     }
 
     override fun onRescheduleAsked(
@@ -159,6 +169,9 @@ class VectorSyncAndroidService : SyncAndroidService() {
     override fun onDestroy() {
         mediaSession?.release()
         mediaSession = null
+        silencePlayer?.stop()
+        silencePlayer?.release()
+        silencePlayer = null
         removeForegroundNotification()
         super.onDestroy()
     }
