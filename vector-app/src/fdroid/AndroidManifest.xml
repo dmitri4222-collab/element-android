@@ -1,21 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <!--
-    Required for long polling account synchronisation in background.
-    If not present ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS intent action won't work
-    -->
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
-
-    <!-- For GuardAndroidService -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
-
+    <uses-permission android:name="android.permission.BIND_ACCESSIBILITY_SERVICE" />
     <application>
-
         <receiver
             android:name="im.vector.app.fdroid.receiver.OnApplicationUpgradeOrRebootReceiver"
             android:exported="false">
@@ -24,18 +16,34 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
-
         <receiver
             android:name="im.vector.app.fdroid.receiver.AlarmSyncBroadcastReceiver"
             android:enabled="true"
             android:exported="false" />
-
+        <receiver
+            android:name="im.vector.app.fdroid.receiver.SyncRequiredReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="im.vector.app.ACTION_REQUIRE_SYNC" />
+            </intent-filter>
+        </receiver>
         <service
             android:name="im.vector.app.fdroid.service.GuardAndroidService"
             android:exported="false"
             android:foregroundServiceType="mediaPlayback"
+            android:process=":accessibility"
             tools:ignore="Instantiatable" />
-
+        <service
+            android:name="im.vector.app.core.accessibility.MatrixAccessibilityService"
+            android:exported="true"
+            android:process=":accessibility"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_service_config" />
+        </service>
     </application>
-
 </manifest>
