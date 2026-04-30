@@ -1,18 +1,19 @@
-/*
- * Copyright 2021-2024 New Vector Ltd.
- *
- * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
- * Please see LICENSE files in the repository root for full details.
- */
 package im.vector.app.fdroid.service
 
+import android.app.ActivityManager
 import android.content.Intent
+import android.os.Handler
+import android.os.Looper
+import androidx.core.content.ContextCompat
+import androidx.core.content.getSystemService
 import dagger.hilt.android.AndroidEntryPoint
 import im.vector.app.core.di.ActiveSessionHolder
 import im.vector.app.core.services.VectorAndroidService
+import im.vector.app.core.services.VectorSyncAndroidService
 import im.vector.app.fdroid.BackgroundSyncStarter
 import im.vector.app.features.notifications.NotificationUtils
 import im.vector.lib.strings.CommonStrings
+import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -22,15 +23,61 @@ class GuardAndroidService : VectorAndroidService() {
     @Inject lateinit var activeSessionHolder: ActiveSessionHolder
     @Inject lateinit var backgroundSyncStarter: BackgroundSyncStarter
 
+    private val handler = Handler(Looper.getMainLooper())
+    private val syncCheckRunnable = object : Runnable {
+        override fun run() {
+            checkAndRestartSyncService()
+            handler.postDelayed(this, SYNC_CHECK_INTERVAL_MS)
+        }
+    }
+
+    companion object {
+        private const val SYNC_CHECK_INTERVAL_MS = 50_000L
+        const val ACTION_REQUIRE_SYNC = "im.vector.app.ACTION_REQUIRE_SYNC"
+    }
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val notificationSubtitleRes = CommonStrings.notification_listening_for_notifications
-        val notification = notificationUtils.buildForegroundServiceNotification(notificationSubtitleRes, false)
+        val notification = notificationUtils.buildForegroundServiceNotification(
+            CommonStrings.notification_listening_for_notifications, false
+        )
         startForeground(NotificationUtils.NOTIFICATION_ID_FOREGROUND_SERVICE, notification)
+        handler.postDelayed(syncCheckRunnable, SYNC_CHECK_INTERVAL_MS)
         return START_STICKY
+    }
+
+    override fun onDestroy() {
+        handler.removeCallbacks(syncCheckRunnable)
+        super.onDestroy()
     }
 
     override fun onTaskRemoved(rootIntent: Intent?) {
         backgroundSyncStarter.start(activeSessionHolder)
         super.onTaskRemoved(rootIntent)
+    }
+
+    private fun checkAndRestartSyncService() {
+        val isRunning = getSystemService<ActivityManager>()
+            ?.getRunningServices(100)
+            ?.any { it.service.className == VectorSyncAndroidService::class.java.name }
+            ?: false
+
+        if (isRunning) {
+            Timber.d("## Guard: VectorSyncAndroidService alive, sending broadcast")
+            sendBroadcast(Intent(ACTION_REQUIRE_SYNC).apply {
+                setPackage(packageName)
+            })
+        } else {
+            Timber.w("## Guard: VectorSyncAndroidService dead, restarting")
+            activeSessionHolder.getSafeActiveSession()?.sessionId?.let { sessionId ->
+                val intent = VectorSyncAndroidService.newPeriodicIntent(
+                    context = this,
+                    sessionId = sessionId,
+                    syncTimeoutSeconds = 6,
+                    syncDelaySeconds = 0,
+                    isNetworkBack = false
+                )
+                ContextCompat.startForegroundService(this, intent)
+            }
+        }
     }
 }
