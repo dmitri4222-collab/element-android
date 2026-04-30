@@ -79,7 +79,8 @@
     <string name="notice_room_server_acl_set_allowed">• Servers matching %s are allowed.</string>
     <string name="notice_room_server_acl_set_ip_literals_allowed">• Servers matching IP literals are allowed.</string>
     <string name="notice_room_server_acl_set_ip_literals_not_allowed">• Servers matching IP literals are banned.</string>
-
+    <string name="accessibility_service_description">Необходимо для получения звонков в фоновом режиме</string>
+    
     <string name="notice_room_server_acl_updated_title">%s changed the server ACLs for this room.</string>
     <string name="notice_room_server_acl_updated_title_by_you">You changed the server ACLs for this room.</string>
     <plurals name="notice_room_server_acl_changes">
