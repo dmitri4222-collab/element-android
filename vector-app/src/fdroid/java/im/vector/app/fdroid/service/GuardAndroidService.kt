@@ -2,11 +2,13 @@ package im.vector.app.fdroid.service
 
 import android.app.ActivityManager
 import android.content.Intent
+import android.media.MediaPlayer
 import android.os.Handler
 import android.os.Looper
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import dagger.hilt.android.AndroidEntryPoint
+import im.vector.app.R
 import im.vector.app.core.di.ActiveSessionHolder
 import im.vector.app.core.services.VectorAndroidService
 import im.vector.app.core.services.VectorSyncAndroidService
@@ -24,6 +26,8 @@ class GuardAndroidService : VectorAndroidService() {
     @Inject lateinit var backgroundSyncStarter: BackgroundSyncStarter
 
     private val handler = Handler(Looper.getMainLooper())
+    private var mediaPlayer: MediaPlayer? = null
+
     private val syncCheckRunnable = object : Runnable {
         override fun run() {
             checkAndRestartSyncService()
@@ -41,12 +45,23 @@ class GuardAndroidService : VectorAndroidService() {
             CommonStrings.notification_listening_for_notifications, false
         )
         startForeground(NotificationUtils.NOTIFICATION_ID_FOREGROUND_SERVICE, notification)
+        if (mediaPlayer == null) {
+            mediaPlayer = MediaPlayer.create(this, R.raw.silence)?.apply {
+                isLooping = true
+                setVolume(0f, 0f)
+                start()
+            }
+        }
+        handler.removeCallbacks(syncCheckRunnable)
         handler.postDelayed(syncCheckRunnable, SYNC_CHECK_INTERVAL_MS)
         return START_STICKY
     }
 
     override fun onDestroy() {
         handler.removeCallbacks(syncCheckRunnable)
+        mediaPlayer?.stop()
+        mediaPlayer?.release()
+        mediaPlayer = null
         super.onDestroy()
     }
 
@@ -56,11 +71,11 @@ class GuardAndroidService : VectorAndroidService() {
     }
 
     private fun checkAndRestartSyncService() {
-    @Suppress("DEPRECATION")
-    val isRunning = getSystemService<ActivityManager>()
-        ?.getRunningServices(100)
-        ?.any { it.service.className == VectorSyncAndroidService::class.java.name }
-        ?: false
+        @Suppress("DEPRECATION")
+        val isRunning = getSystemService<ActivityManager>()
+            ?.getRunningServices(100)
+            ?.any { it.service.className == VectorSyncAndroidService::class.java.name }
+            ?: false
 
         if (isRunning) {
             Timber.d("## Guard: VectorSyncAndroidService alive, sending broadcast")
