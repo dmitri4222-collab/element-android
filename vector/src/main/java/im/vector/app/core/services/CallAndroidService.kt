@@ -109,10 +109,15 @@ class CallAndroidService : VectorAndroidService() {
         when (intent?.action) {
             ACTION_INCOMING_RINGING_CALL -> {
                 mediaSession?.isActive = true
+                val callId = intent.getStringExtra(EXTRA_CALL_ID) ?: ""
+                if (knownCalls.containsKey(callId)) {
+                    Timber.tag(loggerTag.value).d("Ignoring duplicate incoming call ringing for $callId")
+                    return START_REDELIVER_INTENT
+                }
                 val fromBg = intent.getBooleanExtra(EXTRA_IS_IN_BG, false)
                 callRingPlayerIncoming?.start(fromBg)
                 displayIncomingCallNotification(intent)
-            }
+        }
             ACTION_OUTGOING_RINGING_CALL -> {
                 mediaSession?.isActive = true
                 callRingPlayerOutgoing?.start()
