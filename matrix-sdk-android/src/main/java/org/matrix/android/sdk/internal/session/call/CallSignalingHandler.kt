@@ -168,7 +168,7 @@ internal class CallSignalingHandler @Inject constructor(
 
     private fun handleCallHangupEvent(event: Event) {
         val content = event.getClearContent().toModel<CallHangupContent>() ?: return
-        val callId = content.callId ?: return
+        val callId = content.callId
         val call = content.getCall()
         if (call != null && call.state !is CallState.Ended) {
             activeCallHandler.removeCall(callId)
