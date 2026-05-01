@@ -24,6 +24,7 @@ class GuardAndroidService : VectorAndroidService() {
     @Inject lateinit var backgroundSyncStarter: BackgroundSyncStarter
 
     private val handler = Handler(Looper.getMainLooper())
+    private var lastSyncServiceStartTime = 0L
 
     private val syncCheckRunnable = object : Runnable {
         override fun run() {
@@ -34,7 +35,7 @@ class GuardAndroidService : VectorAndroidService() {
 
     companion object {
         private const val SYNC_CHECK_INTERVAL_MS = 50_000L
-        const val ACTION_REQUIRE_SYNC = "im.vector.app.ACTION_REQUIRE_SYNC"
+        private const val MIN_RESTART_INTERVAL_MS = 60_000L
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -64,12 +65,13 @@ class GuardAndroidService : VectorAndroidService() {
             ?.any { it.service.className == VectorSyncAndroidService::class.java.name }
             ?: false
 
-        if (isRunning) {
-            Timber.d("## Guard: VectorSyncAndroidService alive, sending broadcast")
-            sendBroadcast(Intent(ACTION_REQUIRE_SYNC).apply {
-                setPackage(packageName)
-            })
-        } else {
+        if (!isRunning) {
+            val now = System.currentTimeMillis()
+            if (now - lastSyncServiceStartTime < MIN_RESTART_INTERVAL_MS) {
+                Timber.w("## Guard: Too soon to restart VectorSyncAndroidService, skipping")
+                return
+            }
+            lastSyncServiceStartTime = now
             Timber.w("## Guard: VectorSyncAndroidService dead, restarting")
             activeSessionHolder.getSafeActiveSession()?.sessionId?.let { sessionId ->
                 val intent = VectorSyncAndroidService.newPeriodicIntent(
