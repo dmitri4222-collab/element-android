@@ -388,8 +388,6 @@ class WebRtcCallManager @Inject constructor(
             } else {
                 syncStartedWhenInBackground = true
                 currentSession?.syncService()?.startAutomaticBackgroundSync(6, 0)
-                val inviteReceivedAt = System.currentTimeMillis()
-                val lifetime = (callInviteContent.lifetime ?: 60000).toLong()
                 sessionScope?.launch {
                     while (mxCall.state is CallState.LocalRinging) {
                         val elapsed = System.currentTimeMillis() - inviteReceivedAt
