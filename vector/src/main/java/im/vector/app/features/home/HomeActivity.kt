@@ -90,6 +90,7 @@ import org.matrix.android.sdk.api.session.sync.initialSyncStrategy
 import org.matrix.android.sdk.api.util.MatrixItem
 import timber.log.Timber
 import javax.inject.Inject
+import android.os.Build
 
 @Parcelize
 data class HomeActivityArgs(
