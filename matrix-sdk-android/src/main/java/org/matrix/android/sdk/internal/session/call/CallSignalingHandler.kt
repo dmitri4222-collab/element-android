@@ -168,15 +168,12 @@ internal class CallSignalingHandler @Inject constructor(
 
     private fun handleCallHangupEvent(event: Event) {
         val content = event.getClearContent().toModel<CallHangupContent>() ?: return
-        val call = content.getCall() ?: return
-        // party ID must match (our chosen partner hanging up the call) or be undefined (we haven't chosen
-        // a partner yet but we're treating the hangup as a reject as per VoIP v0)
-        if (call.opponentPartyId != null && !call.partyIdsMatches(content)) {
-            Timber.tag(loggerTag.value).v("Ignoring hangup from party ID ${content.partyId} we have chosen party ID ${call.opponentPartyId}")
-            return
-        }
-        if (call.state !is CallState.Ended) {
-            activeCallHandler.removeCall(content.callId)
+        val callId = content.callId ?: return
+        val call = content.getCall()
+        if (call != null && call.state !is CallState.Ended) {
+            activeCallHandler.removeCall(callId)
+            callListenersDispatcher.onCallHangupReceived(content)
+        } else if (call == null) {
             callListenersDispatcher.onCallHangupReceived(content)
         }
     }
