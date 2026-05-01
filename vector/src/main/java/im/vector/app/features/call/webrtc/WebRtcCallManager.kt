@@ -371,6 +371,15 @@ class WebRtcCallManager @Inject constructor(
                 callId = mxCall.callId,
                 isInBackground = isInBackground
         )
+        val inviteReceivedAt = System.currentTimeMillis()
+        val lifetime = (callInviteContent.lifetime ?: 60000).toLong()
+        sessionScope?.launch {
+            delay(lifetime)
+            if (mxCall.state is CallState.LocalRinging) {
+                Timber.tag(loggerTag.value).w("onCallInviteReceived: TTL exhausted, ending call ${mxCall.callId}")
+                callsByCallId[mxCall.callId]?.endCall(EndCallReason.INVITE_TIMEOUT, sendSignaling = false)
+            }
+        }
 // accepted on an other session this device will continue ringing
         if (isInBackground) {
             if (!unifiedPushHelper.isBackgroundSync()) {
