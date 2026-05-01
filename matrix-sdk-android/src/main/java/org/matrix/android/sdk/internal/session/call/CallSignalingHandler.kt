@@ -50,7 +50,7 @@ internal class CallSignalingHandler @Inject constructor(
         private val clock: Clock,
 ) {
 
-    private val invitedCallIds = mutableSetOf<String>()
+    private val invitedCallIds = Collections.synchronizedSet(mutableSetOf<String>())
     private val processedEventIds = Collections.synchronizedSet(mutableSetOf<String>())
     private val callListeners = mutableSetOf<CallListener>()
     private val callListenersDispatcher = CallListenersDispatcher(callListeners)
