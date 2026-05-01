@@ -37,6 +37,7 @@ import org.matrix.android.sdk.internal.session.SessionScope
 import org.matrix.android.sdk.internal.util.time.Clock
 import timber.log.Timber
 import javax.inject.Inject
+import java.util.Collections
 
 private val loggerTag = LoggerTag("CallSignalingHandler", LoggerTag.VOIP)
 private const val MAX_AGE_TO_RING = 120_000
@@ -50,6 +51,7 @@ internal class CallSignalingHandler @Inject constructor(
 ) {
 
     private val invitedCallIds = mutableSetOf<String>()
+    private val processedEventIds = Collections.synchronizedSet(mutableSetOf<String>())
     private val callListeners = mutableSetOf<CallListener>()
     private val callListenersDispatcher = CallListenersDispatcher(callListeners)
 
@@ -192,6 +194,11 @@ internal class CallSignalingHandler @Inject constructor(
         if (age > MAX_AGE_TO_RING) {
             Timber.tag(loggerTag.value).w("Call invite is too old to ring.")
             return
+        }
+        val eventId = event.eventId ?: return
+        if (!processedEventIds.add(eventId)) {
+            Timber.tag(loggerTag.value).d("Ignoring duplicate call invite event $eventId")
+        return
         }
         val content = event.getClearContent().toModel<CallInviteContent>() ?: return
 
