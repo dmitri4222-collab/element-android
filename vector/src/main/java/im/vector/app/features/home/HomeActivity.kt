@@ -270,8 +270,20 @@ class HomeActivity :
             handleIntent(intent)
         }
         homeActivityViewModel.handle(HomeActivityViewActions.ViewStarted)
+        requestFullScreenIntentPermissionIfNeeded()
     }
-
+    private fun requestFullScreenIntentPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            val notificationManager = getSystemService(android.app.NotificationManager::class.java)
+            if (!notificationManager.canUseFullScreenIntent()) {
+                val intent = Intent(android.provider.Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT).apply {
+                    data = android.net.Uri.parse("package:$packageName")
+                }
+                startActivity(intent)
+            }
+        }
+    }
+    
     private fun askUserToSelectPushDistributor() {
         unifiedPushHelper.showSelectDistributorDialog(this) { selection ->
             homeActivityViewModel.handle(HomeActivityViewActions.RegisterPushDistributor(selection))
