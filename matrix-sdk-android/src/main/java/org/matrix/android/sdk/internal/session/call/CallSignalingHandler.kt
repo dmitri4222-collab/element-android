@@ -200,7 +200,7 @@ internal class CallSignalingHandler @Inject constructor(
         val content = event.getClearContent().toModel<CallInviteContent>() ?: return
 
         content.callId ?: return
-        if (invitedCallIds.contains(content.callId)) {
+        if (!invitedCallIds.add(content.callId)) {
             // Call is already known, maybe due to fast lane. Ignore
             Timber.tag(loggerTag.value).d("Ignoring already known call invite")
             return
@@ -210,7 +210,6 @@ internal class CallSignalingHandler @Inject constructor(
                 opponentUserId = event.senderId,
                 content = content
         ) ?: return
-        invitedCallIds.add(content.callId)
         activeCallHandler.addCall(incomingCall)
         callListenersDispatcher.onCallInviteReceived(incomingCall, content)
     }
